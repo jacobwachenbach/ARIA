@@ -21,7 +21,7 @@ Structured AI Outputs: The backend must use strict JSON Schema forcing when prom
 
 AI Copilot & Natural-Language Navigation: When a local LLM is connected, the analyst can ask plain-language questions in a persistent Copilot panel (e.g., "Where is the login handler?", "Does an `/admin` route exist?", "Take me to the struct we noted yesterday", "Open the page that handles password reset"). The Copilot does not guess—it queries indexed project state and optional browser attach data, then resolves the best match and navigates the UI on the user's behalf.
 
-Copilot Query Scope: The Local AI can search across function names and pseudocode, renamed symbols, bookmarks, Knowledge Graph notes, captured HTTP traffic and API routes, sitemap/URL inventory from an attached browser, DOM snapshots, and recent analysis history.
+Copilot Query Scope: The Local AI can search across function names and pseudocode, renamed symbols, bookmarks, Knowledge Graph notes, captured HTTP traffic and API routes, sitemap/URL inventory from an attached browser, DOM snapshots, recent analysis history, and metadata for files imported via drag-and-drop or File → Open.
 
 Structured Navigation Actions: The LLM returns a strict JSON navigation plan (not free-form clicks), using a fixed action schema such as `navigate_to_function`, `navigate_to_address`, `open_view` (Disassembly / Decompiler / Memory / Traffic / Notes), `browser_goto_url`, `browser_highlight_element`, and `show_search_results`. The UI executor validates every action against the current project before applying it.
 
@@ -40,6 +40,16 @@ Plugin & Extension API: A stable SDK (Rust/C++ core with Python bindings) so thi
 2. Static Analysis Engine (Ghidra / IDA Parity)
 
 Multi-Format Loaders: PE, ELF, Mach-O, raw firmware images, and packaged archives. Auto-detect architecture (x86, x64, ARM32, ARM64, WASM where applicable).
+
+Drag-and-Drop File Import: Analysts can drop one or more files directly onto the NexusRE window—main window, welcome screen, or project tree—to import and begin static analysis immediately, identical to Ghidra's drag-to-import and IDA's drag-and-drop loader workflow. No File menu required.
+
+Drop Target & Import Pipeline: A persistent drop zone overlay appears when files are dragged over the app. On drop, NexusRE queues each file, auto-selects the correct loader by magic bytes/extension, pairs companion artifacts dropped together (e.g., `.exe` + `.pdb`, `.elf` + debug link), and runs the standard import → analyze → index pipeline in the background.
+
+Multi-File & Folder Drops: Support dropping multiple binaries at once, `.zip`/archive bundles, and folders (recursive import of supported types). Each item opens as a separate module in the current project or prompts to create a new project when none is open.
+
+Post-Drop Analysis UX: A non-blocking progress tray shows per-file status (detecting format, loading, disassembling, decompiling, indexing). When complete, the first function or entry point is focused automatically; the Copilot can answer questions about the newly imported file ("What does this binary do?", "List exported functions").
+
+Drag-and-Drop Safety: Dropped content is analyzed locally only. Executables are never auto-run on drop—static inspection only unless the analyst explicitly chooses dynamic attach afterward.
 
 Disassembler & Decompiler: Production-grade linear disassembly with a high-level C pseudocode decompiler view. Support rename, retype, comment, and structure definition workflows identical in spirit to Ghidra's Listing/Decompiler and IDA's Hex-Rays.
 
@@ -114,6 +124,8 @@ Project Persistence & Versioning: Notes, scripts, types, and bookmarks serialize
 6. UI & Interface Requirements
 
 Synchronized Multi-View: A tear-away, split-pane UI featuring Disassembly, C-Pseudocode, Live Memory Hex Dump, Script Editor, Function Graph, and Knowledge Graph Notes—layout presets modeled on familiar Ghidra/IDA workflows.
+
+Drag-and-Drop Workspace: The entire application shell acts as a valid drop target. An empty workspace shows a centered "Drop files to analyze" prompt with supported format hints (PE, ELF, Mach-O, dumps, archives, PDB/DWARF sidecars). Dragging files over any pane shows a translucent overlay so analysts can drop without switching views.
 
 AI Copilot Panel: A dockable chat sidebar (visible only when a local LLM endpoint is connected) for natural-language questions and navigation commands. Successful resolutions auto-focus the correct pane, scroll to the target line/address/URL, and briefly highlight the destination so the analyst always sees where they were taken.
 
@@ -211,4 +223,6 @@ Script Runtime & API Surface: Python/Lua binding design, sandbox model, and exam
 
 Browser & Traffic Module Design: CDP attach, localhost proxy, and traffic-to-memory correlation pipelines.
 
-UI Layout Scaffold: Frontend framework (React/TypeScript or Qt) for synchronized multi-view, Script Editor, notes, and Traffic Inspector panes.
+UI Layout Scaffold: Frontend framework (React/TypeScript or Qt) for synchronized multi-view, Script Editor, notes, Traffic Inspector panes, and drag-and-drop import overlays.
+
+File Import & Drop Handler: Loader detection, multi-file queue, companion-artifact pairing, and progress-tray UX for dropped files.
