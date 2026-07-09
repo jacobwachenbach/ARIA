@@ -1,100 +1,187 @@
 The v2 Master Architecture Prompt
-Copy and paste this into your target AI. It leaves zero ambiguity about the automation, game-specific capabilities, and local AI integration.
+Copy and paste this into your target AI. It leaves zero ambiguity about the automation, application-specific analysis capabilities, and local AI integration.
 
 System Role & Objective
-Act as a Principal Systems Architect, Senior Game Hacker, and Cybersecurity Expert. Your objective is to architect and generate the complete application for "NexusRE", a next-generation, AI-native reverse engineering and dynamic analysis platform.
+Act as a Principal Systems Architect, Senior Binary Analysis Engineer, and Application Security Researcher. Your objective is to architect and generate the complete application for "NexusRE", a next-generation, AI-native reverse engineering and dynamic analysis platform.
 
-NexusRE must be 10x faster and more capable than Ghidra/IDA Pro by seamlessly merging static binary analysis with dynamic memory scanning, specifically tuned for complex desktop applications and modern games. It must feature a deeply integrated Local AI Orchestration layer to automate structural reversing, vulnerability discovery, and payload generation.
+NexusRE must be 10x faster and more capable than Ghidra/IDA Pro by seamlessly merging static binary analysis with dynamic runtime inspection, specifically tuned for complex desktop applications, native libraries, and interactive software. It must feature a deeply integrated Local AI Orchestration layer to automate structural analysis, vulnerability research, and reproducible test harness generation.
+
+Intended Use & Compliance
+NexusRE is a professional security research and software analysis workstation. All features assume authorized use only: analyzing binaries you own, software you have written permission to assess, or targets covered by a formal bug-bounty or penetration-test engagement. The platform includes scope controls, audit logging, and consent prompts before any live attach or traffic capture.
 
 Product Requirements Document (PRD)
 
 1. Core Architecture & Local AI Integration
 
-Engine Stack: Rust or modern C++ backend for memory safety, multi-threading, and hardware-accelerated memory scanning (reading/writing to live processes).
+Engine Stack: Rust or modern C++ backend for memory safety, multi-threading, and hardware-accelerated runtime memory inspection (read-only by default; optional write access gated behind explicit user confirmation and audit logging).
 
-Local AI Orchestration: Implement an inference abstraction layer designed to hook directly into local LLMs (e.g., Ollama, LM Studio, vLLM) via standard localhost:11434 or OpenAI-compatible endpoints. The tool must operate fully offline for maximum privacy and zero latency.
+Local AI Orchestration: Implement an inference abstraction layer designed to connect to local LLMs (e.g., Ollama, LM Studio, vLLM) via standard localhost:11434 or OpenAI-compatible endpoints. The tool must operate fully offline for maximum privacy and zero latency.
 
-Structured AI Outputs: The backend must use strict JSON Schema forcing when prompting the local model, ensuring the LLM returns perfectly formatted C++ structs, memory offsets, or Python scripts without hallucinating invalid syntax.
+Structured AI Outputs: The backend must use strict JSON Schema forcing when prompting the local model, ensuring the LLM returns perfectly formatted C++ struct definitions, memory layout annotations, offset tables, or analysis scripts without hallucinating invalid syntax.
 
-2. Game & Desktop Automation (The 10x Features)
+Headless & Batch Mode: A CLI entry point for unattended analysis pipelines (import binary → run scripted passes → export reports), comparable to Ghidra's headless analyzer and IDA's idalib.
 
-Automated Class & Struct Reconstruction: The system must actively monitor live heap allocations and parse RTTI (Run-Time Type Information). It should automatically rebuild complex C++ class hierarchies (like an Entity or PlayerBase class), map out virtual function tables (Vtables), and guess variable types based on memory access patterns.
+Plugin & Extension API: A stable SDK (Rust/C++ core with Python bindings) so third parties can add loaders, analyzers, exporters, and UI panels without forking the core.
 
-Dynamic Weak Point Discovery: The AI must perform automated taint analysis. If I select a game's networking function, the AI traces the packet buffer to identify unchecked bounds, integer overflows, logic flaws, or ideal memory injection points.
+2. Static Analysis Engine (Ghidra / IDA Parity)
 
-Pattern & Signature Generation: One-click automation to take any function or memory address and generate a robust, update-resilient byte signature (AOB) to locate it in future updates.
+Multi-Format Loaders: PE, ELF, Mach-O, raw firmware images, and packaged archives. Auto-detect architecture (x86, x64, ARM32, ARM64, WASM where applicable).
 
-3. Script & Payload Generation Matrix
+Disassembler & Decompiler: Production-grade linear disassembly with a high-level C pseudocode decompiler view. Support rename, retype, comment, and structure definition workflows identical in spirit to Ghidra's Listing/Decompiler and IDA's Hex-Rays.
 
-Instant Hook Generation: When a user highlights a function in the decompiler, the tool must offer a "Generate Hook" context menu. The AI will instantly write the exact C++ boilerplate (using MinHook, Detours, or custom trampolines) to intercept that function.
+Symbol & Debug Info: Import PDB, DWARF, and map files. Resolve exports, imports, and demangled C++ names.
 
-Custom Script Exports: The AI must be able to compile its findings into extractable scripts. Target outputs include Python automation scripts, C++ DLL injection templates, GSC-style logic mappings, and Cheat Engine .CT table XML formats.
+Cross-References & Call Graph: Full xref graph (code ↔ data), function call trees, and interactive graph visualization for control-flow and data-flow exploration.
 
-4. The Knowledge Graph Note System
+Signature & Library Recognition: FLIRT-style function identification, byte-pattern (AOB) signatures for locating the same logic across builds, and a user-editable type library for common runtimes (CRT, STL, game engines, UI frameworks).
 
-Contextual Scratchpad: A dedicated, markdown-supported note tab that is directly linked to the RE workspace.
+Binary Diffing: Side-by-side comparison of two builds to highlight changed functions, shifted offsets, and patched regions—useful for patch Tuesday analysis and regression triage.
 
-Live-Linked Assets: If the AI extracts a player class struct or finds a vulnerability, it can be embedded into a note. Clicking the offset or function name inside the note instantly jumps the main UI to that exact location in the disassembly or live memory view.
+String, Import & Entropy Passes: Automated string extraction, API surface enumeration, packer/obfuscator heuristics, and section entropy scoring.
 
-AI Synthesizer: The AI can read the user's entire note tab and generate a unified "Exploit/Modding Strategy Report" summarizing all found offsets, classes, and recommended hook points.
+3. Dynamic Analysis & Runtime Inspection
 
-5. UI & Interface Requirements
+Live Process Attach: Attach to a user-selected, locally running process with clear consent UI. Default mode is non-invasive read-only memory and module enumeration.
 
-Synchronized Multi-View: A tear-away, split-pane UI featuring Disassembly, C-Pseudocode, Live Memory Hex Dump, and the Knowledge Graph Notes.
+Automated Class & Struct Reconstruction: Monitor heap allocations and parse RTTI (Run-Time Type Information) where present. Rebuild C++ class hierarchies, map virtual function tables (Vtables), and infer field types from memory access patterns—presented as editable struct definitions synced to the static database.
 
-Zero-Lag Asynchronous Design: The UI must never lock up while the backend scans memory or queries the local LLM.
+Data-Flow & Taint Analysis: When the analyst selects a networking or serialization routine, trace buffer lifetimes to flag missing bounds checks, integer edge cases, and unvalidated input paths suitable for further manual review.
 
-6. Web Browser & Network Traffic Integration (Security & Pen Testing)
+Pattern & Signature Generation: One-click export of update-resilient byte signatures from any function or address for reuse in future builds or CI regression checks.
 
-NexusRE must support optional attachment to web browsers and live network traffic so security researchers can use the same platform for web application pen testing, vulnerability assessment, and hybrid desktop/web attack surface analysis.
+Debugger Integration: Breakpoints, single-step, register and stack views, and memory watchpoints—unified with the static database so renamed symbols persist across static and dynamic sessions.
 
-6.1 Browser Attachment Modes
+4. Built-In Scripting, Code Extraction & Automation Studio
 
-Browser Extension Bridge: A lightweight Chromium/Firefox extension that streams DOM events, JavaScript call stacks, localStorage/sessionStorage reads, and WebSocket frames to NexusRE over a localhost WebSocket (default port 17890). The extension runs only when explicitly enabled by the user and requires a one-time pairing token generated by the NexusRE desktop app.
+NexusRE must ship with a first-class scripting environment comparable to Ghidra Scripts and IDA Python, not only export-only workflows.
 
-DevTools Protocol (CDP) Attach: Direct attachment to Chrome, Edge, or Chromium-based browsers via the Chrome DevTools Protocol. NexusRE can attach to an existing browser session or launch a sandboxed profile. Capabilities include breakpointing JavaScript, inspecting network requests, capturing HAR-like traffic logs, and mapping minified source back to original bundles when source maps are available.
+4.1 Code Extraction
 
-Playwright/Puppeteer Headless Hook: For automated regression testing, NexusRE can drive a headless browser and pipe all navigation, console output, and intercepted requests into the Knowledge Graph. Useful for CI-style vulnerability sweeps against staging environments.
+Decompiler Export: Extract function pseudocode, struct headers, enum definitions, and xref lists to C header files, Markdown reports, or JSON analysis bundles.
 
-6.2 Network Traffic Interception & Analysis
+Selection-Aware Extract: Highlight any address range, basic block, or struct and export exactly that slice—preserving comments, types, and renamed labels.
 
-Local MITM Proxy: An embedded HTTP/HTTPS proxy (similar to Burp Suite or mitmproxy) that NexusRE can start on localhost. The user installs the NexusRE root CA once; all browser and desktop-app traffic routed through the proxy is decrypted, logged, and indexed.
+Batch Extract: Run a script across all functions matching a filter (e.g., imports from `ws2_32.dll`, RTTI class names containing `Network`) and write results to a project folder.
 
-Process-Scoped Traffic Capture: For desktop apps that embed WebView2, CEF, or Electron, NexusRE attaches to the host process and correlates outbound HTTP/TLS calls with the in-memory call stack that initiated them—bridging static RE findings with live network behavior.
+Live Snapshot Export: From a dynamic session, dump reconstructed layouts, register state at a breakpoint, or a memory region as annotated hex + C struct.
 
-Traffic-to-Memory Correlation: When a captured request contains a suspicious parameter (e.g., unsanitized user input reflected in a response), the AI traces that value backward through the desktop process memory to find the originating buffer, function, and struct—unifying web and native attack chains in a single view.
+4.2 Custom Script Authoring & Execution
 
-WebSocket & gRPC Stream Inspection: Real-time decoding of WebSocket frames, Server-Sent Events, and gRPC/protobuf streams. The Local AI can flag protocol-level flaws (missing auth on subscribe, replayable tokens, schema confusion) and auto-generate proof-of-concept payloads.
+Built-In Script Editor: Syntax-highlighted IDE pane supporting Python 3 and an optional Lua DSL, with autocomplete for the NexusRE API (functions, segments, xrefs, types, debugger, traffic logs).
 
-6.3 Pen Testing & Vulnerability Testing Workflows
+Script Templates Gallery: Starter templates for common tasks—enumerate exports, find string references, decode a protocol struct, diff two versions, generate a call graph PNG, run a custom linter on decompiler output.
 
-Automated OWASP Top 10 Sweep: User selects a target URL or browses manually; NexusRE's AI analyzes captured traffic and DOM mutations to flag SQLi, XSS, CSRF, IDOR, SSRF, and insecure deserialization patterns. Findings are written to the Knowledge Graph with reproducible curl/Python PoC scripts.
+One-Click Run & REPL Console: Run the active script against the open project or attached session; interactive REPL for ad-hoc queries (`get_xrefs`, `rename_function`, `read_u32`).
 
-Fuzzing Matrix: One-click fuzzing of API endpoints discovered during traffic capture. NexusRE mutates parameters (boundary values, type confusion, encoding tricks) and records anomalous responses, status codes, and crash signatures.
+Sandboxed Execution: Scripts run in a restricted interpreter by default (no arbitrary network or filesystem writes outside the project directory unless the user elevates permissions).
 
-Session & Token Analysis: Automatic extraction and classification of JWTs, cookies, API keys, and OAuth tokens from traffic. The AI decodes claims, checks expiry/algorithm weaknesses, and highlights tokens that traverse insecure channels or lack HttpOnly/Secure flags.
+Scheduled & Event-Driven Hooks: Scripts can register on events—binary imported, function renamed, breakpoint hit, HTTP request captured—to automate repetitive analyst workflows.
 
-Hybrid Attack Surface Map: For Electron games, launchers, or anti-cheat clients that mix native code with embedded web UIs, NexusRE builds a unified graph linking native memory regions, IPC channels, and web endpoints—surfacing trust-boundary crossings (e.g., a webview postMessage handler that calls a privileged native function).
+AI-Assisted Script Generation: From any UI selection, ask the Local AI to draft a script (e.g., "list all callers of this API and log argument sizes"). The user reviews and runs it in the Script Editor—nothing executes without explicit approval.
 
-Compliance & Scope Guardrails: All browser and traffic features require explicit user opt-in. A built-in scope allowlist restricts capture to user-defined domains/IPs. Sensitive data (passwords, credit cards) is redacted in logs by default and never sent to the Local AI unless the user explicitly overrides.
+4.3 Instrumentation & Interceptor Scaffolding
 
-6.4 Integration with Existing NexusRE Features
+Function Interceptor Wizard: When a user highlights a function in the decompiler, offer "Generate Instrumentation Hook" to produce C++ boilerplate (MinHook, Detours, or trampolines) for logging arguments and return values during authorized dynamic analysis.
 
-Knowledge Graph Linking: A discovered XSS sink or API endpoint appears as a first-class node alongside memory offsets and Vtable entries. Clicking it jumps to the traffic log, DOM snapshot, or native call stack that produced it.
+Analysis Plugin Templates: Exportable C++ or Rust dynamic-analysis modules for in-process tracing, presented as research plugins with clear build instructions—not opaque binaries.
 
-AI Synthesizer Extension: The "Exploit/Modding Strategy Report" expands to include a "Web Attack Surface Summary" section covering endpoints, auth flows, injection points, and recommended next tests.
+Automation Script Exports: Package findings into Python analysis scripts, annotated C++ tracing stubs, structured JSON for CI, and portable memory-analysis table formats compatible with common RE workflows.
 
-Script Export Targets: In addition to C++ hooks and Cheat Engine tables, the AI can export Burp Suite intruder configs, nuclei templates, ffuf wordlists, and Python requests-based exploit chains.
+5. The Knowledge Graph Note System
 
-7. Expected Output Deliverables
+Contextual Scratchpad: A dedicated, markdown-supported note tab directly linked to the analysis workspace.
+
+Live-Linked Assets: Extracted structs, vulnerability findings, and traffic captures embed as clickable anchors. Selecting an offset, function, or URL jumps the main UI to that location in disassembly, decompiler, memory view, or traffic log.
+
+AI Synthesizer: The Local AI reads the full note graph and produces a unified Security & Compatibility Assessment Report summarizing offsets, classes, protocol fields, recommended instrumentation points, and open questions for peer review.
+
+Project Persistence & Versioning: Notes, scripts, types, and bookmarks serialize into a versioned project file; optional Git integration for team review of analysis artifacts (not the target binary itself).
+
+6. UI & Interface Requirements
+
+Synchronized Multi-View: A tear-away, split-pane UI featuring Disassembly, C-Pseudocode, Live Memory Hex Dump, Script Editor, Function Graph, and Knowledge Graph Notes—layout presets modeled on familiar Ghidra/IDA workflows.
+
+Bookmarks, History & Annotations: Per-function color tags, analyst comments, and a navigable analysis history trail.
+
+Zero-Lag Asynchronous Design: The UI must never lock up while the backend scans memory, decompiles, or queries the local LLM.
+
+Theming & Accessibility: Dark/light themes, scalable fonts, and keyboard-driven navigation for power users.
+
+7. Web Browser & Network Traffic Integration (Authorized Security Testing)
+
+NexusRE must support optional attachment to web browsers and live network traffic so security researchers can use the same platform for web application assessment, vulnerability validation, and hybrid native/web analysis—always within user-defined scope.
+
+7.1 Browser Attachment Modes
+
+Browser Extension Bridge: A lightweight Chromium/Firefox extension that streams DOM events, JavaScript call stacks, storage access patterns, and WebSocket frames to NexusRE over localhost WebSocket (default port 17890). Enabled only by explicit user action with a one-time pairing token from the desktop app.
+
+DevTools Protocol (CDP) Attach: Attach to Chrome, Edge, or Chromium via CDP for JavaScript breakpoints, network inspection, HAR-like logs, and source-map-aware debugging.
+
+Playwright/Puppeteer Headless Hook: Drive a headless browser for automated regression passes against staging environments; pipe navigation, console output, and requests into the Knowledge Graph.
+
+7.2 Network Traffic Inspection & Analysis
+
+Local TLS Inspection Proxy: An embedded HTTP/HTTPS proxy (Burp Suite / mitmproxy-class) on localhost. User installs a NexusRE CA once; scoped traffic is decrypted, logged, and indexed.
+
+Process-Scoped Traffic Capture: For desktop apps using WebView2, CEF, or Electron, correlate outbound HTTP/TLS with the native call stack that initiated the request.
+
+Traffic-to-Memory Correlation: Trace suspicious parameter values from captured requests back through the desktop process to the originating buffer, function, and struct.
+
+WebSocket & gRPC Stream Inspection: Decode frames and protobuf messages; flag protocol design issues (missing auth on subscribe, weak token binding, schema mismatch) and generate reproducible validation scripts for the Script Editor.
+
+7.3 Security Assessment Workflows
+
+OWASP-Oriented Traffic Review: Analyze captured traffic and DOM behavior for common web vulnerability classes (injection, XSS, CSRF, IDOR, SSRF, insecure deserialization). Findings link to the Knowledge Graph with curl/Python reproduction steps suitable for responsible disclosure.
+
+API Fuzzing Matrix: Mutate parameters on discovered endpoints; record anomalous responses, status codes, and crash signatures for triage.
+
+Session & Token Analysis: Extract and classify JWTs, cookies, API keys, and OAuth tokens; decode claims and highlight transport or attribute misconfigurations.
+
+Hybrid Application Surface Map: For Electron apps, launchers, and mixed native/web clients, build a unified graph of native modules, IPC channels, and web endpoints—highlighting trust-boundary crossings for manual review.
+
+Compliance & Scope Guardrails: Opt-in capture only; domain/IP allowlists; sensitive field redaction by default; full audit log of attach and proxy actions.
+
+7.4 Integration with Scripting & Notes
+
+Traffic-Aware Scripts: Scripts can iterate captured requests, decode protobuf fields, and cross-link results to native functions.
+
+AI Synthesizer Extension: Reports include a Web Application Surface Summary alongside native findings.
+
+Export Targets: Burp-compatible configs, nuclei templates, ffuf wordlists, and Python `requests` validation scripts—plus direct import into the Built-In Script Editor for editing before run.
+
+8. Recommended Additions (Gap Analysis vs. Ghidra / IDA Pro)
+
+The following items are not yet fully specified above and should be tracked on the roadmap:
+
+| Area | Recommended Inclusion | Priority |
+|------|----------------------|----------|
+| Emulation | Optional unicorn/QEMU slice for sandboxed execution of untrusted snippets | Medium |
+| Firmware / IoT | NAND/NOR dump loaders, partition parsers, base-address rebasing | Medium |
+| Collaborative RE | Shared project servers, role-based access, comment threads on functions | High |
+| CI/CD Integration | GitHub/GitLab Action to run headless analysis on release artifacts | High |
+| YARA Integration | Scan segments and memory regions with user YARA rules | Medium |
+| Capstone / LLVM IR | Optional LLVM IR export for advanced optimization research | Low |
+| Malware Safe Mode | Detachable analysis VM profile with network disabled by default | High |
+| Report Export | PDF/HTML executive summaries for audit and disclosure workflows | Medium |
+| License Management | Offline node-locked or floating licenses for enterprise lab deployments | Low |
+| Training Mode | Sample binaries and guided labs teaching xref, struct recovery, and scripting | Medium |
+| Macro Recorder | Record UI/analysis steps and replay as a script skeleton | Medium |
+| Custom Calling Conventions | User-defined ABI for exotic or obfuscated binaries | Medium |
+| Unpacker Assist | OEP detection heuristics and staged dump-to-database workflow | High |
+| Semantic Search | Embedding-based "find similar functions" across large binaries | High |
+| SBOM / Dependency Graph | Map statically linked and dynamically loaded third-party components | Medium |
+
+9. Expected Output Deliverables
 Execute this prompt by providing:
 
-Architecture Blueprint: Outline how the Memory Scanner, Decompiler, Local AI Context Manager, Browser Bridge, and Traffic Proxy communicate.
+Architecture Blueprint: How the Static Analyzer, Dynamic Inspector, Decompiler, Local AI Context Manager, Script Runtime, Browser Bridge, and Traffic Proxy communicate.
 
-AI Orchestration Code: Provide the Rust/Python code for querying the local LLM API and enforcing a strict JSON output schema for reversing tasks.
+AI Orchestration Code: Rust/Python for querying the local LLM API with strict JSON Schema outputs for analysis tasks.
 
-Class Reconstruction Algorithm: The foundational code for scanning live memory to detect and map C++ Vtables and player structures.
+Class Reconstruction Algorithm: Foundational code for RTTI/Vtable scanning and struct inference from live memory.
 
-Browser & Traffic Module Design: The architecture for CDP attach, the localhost proxy, and traffic-to-memory correlation pipelines.
+Script Runtime & API Surface: Python/Lua binding design, sandbox model, and example scripts (enumerate functions, extract decompiler code, export headers).
 
-UI Layout Scaffold: The frontend framework (React/TypeScript or Qt) for the synchronized multi-view, note-taking tab, and optional Traffic Inspector pane.
+Browser & Traffic Module Design: CDP attach, localhost proxy, and traffic-to-memory correlation pipelines.
+
+UI Layout Scaffold: Frontend framework (React/TypeScript or Qt) for synchronized multi-view, Script Editor, notes, and Traffic Inspector panes.
