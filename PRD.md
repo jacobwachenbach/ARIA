@@ -9,6 +9,17 @@ NexusRE must be 10x faster and more capable than Ghidra/IDA Pro by seamlessly me
 Intended Use & Compliance
 NexusRE is a professional security research and software analysis workstation. All features assume authorized use only: analyzing binaries you own, software you have written permission to assess, or targets covered by a formal bug-bounty or penetration-test engagement. The platform includes scope controls, audit logging, and consent prompts before any live attach or traffic capture.
 
+Intended Audiences & Use Cases
+NexusRE is designed for both professional and personal analysis workflows:
+
+Business & Product Teams: Companies and development teams can use NexusRE to test and validate their own applications, desktop clients, APIs, and websites before release. Typical uses include internal security reviews, QA hardening, regression checks after updates, verifying third-party dependencies, and documenting architecture for compliance or audit purposes—all against systems the organization owns or controls.
+
+Independent Developers & Personal Projects: Individual developers and hobbyists can use NexusRE to understand how their own software works, debug native or hybrid apps they are building, inspect personal projects, learn reverse engineering concepts, and run security sanity checks on apps or sites they host for themselves—all without requiring an enterprise license or external cloud services.
+
+Security Researchers & Consultants: Professional analysts use the same toolset for authorized client engagements, bug-bounty programs, and responsible disclosure workflows.
+
+Regardless of audience, analysts must only analyze software and web properties they own or have explicit permission to test. The built-in scope controls and audit logging apply equally to business, personal, and consulting use.
+
 Product Requirements Document (PRD)
 
 1. Core Architecture & Local AI Integration
