@@ -19,6 +19,20 @@ Local AI Orchestration: Implement an inference abstraction layer designed to con
 
 Structured AI Outputs: The backend must use strict JSON Schema forcing when prompting the local model, ensuring the LLM returns perfectly formatted C++ struct definitions, memory layout annotations, offset tables, or analysis scripts without hallucinating invalid syntax.
 
+AI Copilot & Natural-Language Navigation: When a local LLM is connected, the analyst can ask plain-language questions in a persistent Copilot panel (e.g., "Where is the login handler?", "Does an `/admin` route exist?", "Take me to the struct we noted yesterday", "Open the page that handles password reset"). The Copilot does not guess—it queries indexed project state and optional browser attach data, then resolves the best match and navigates the UI on the user's behalf.
+
+Copilot Query Scope: The Local AI can search across function names and pseudocode, renamed symbols, bookmarks, Knowledge Graph notes, captured HTTP traffic and API routes, sitemap/URL inventory from an attached browser, DOM snapshots, and recent analysis history.
+
+Structured Navigation Actions: The LLM returns a strict JSON navigation plan (not free-form clicks), using a fixed action schema such as `navigate_to_function`, `navigate_to_address`, `open_view` (Disassembly / Decompiler / Memory / Traffic / Notes), `browser_goto_url`, `browser_highlight_element`, and `show_search_results`. The UI executor validates every action against the current project before applying it.
+
+Existence & Location Answers: For questions like "Does this page exist?" or "Is there a handler for JWT refresh?", the Copilot returns a concise answer (yes/no/unknown) with evidence links—matching URLs, routes, functions, or xrefs—and offers a one-click "Go there" action that performs the navigation automatically.
+
+Disambiguation UX: When multiple matches are found (e.g., three functions containing `authenticate`), the Copilot presents a ranked picker with context snippets. The user selects one entry or replies "the second one"; the Copilot then navigates without requiring manual menu drilling.
+
+Browser-Aware Go-To: With CDP or the extension bridge attached, the user can ask "Find the settings page" or "Where is the checkout API called from?" The Copilot correlates DOM routes, network logs, and—when available—native call stacks, then opens the correct browser URL or scrolls to the relevant element while syncing the native disassembly view if a correlation exists.
+
+Safety & Confirmations: Navigating to a live URL outside the configured scope allowlist requires explicit confirmation. All Copilot navigation actions are logged in the audit trail with the original prompt, chosen target, and timestamp.
+
 Headless & Batch Mode: A CLI entry point for unattended analysis pipelines (import binary → run scripted passes → export reports), comparable to Ghidra's headless analyzer and IDA's idalib.
 
 Plugin & Extension API: A stable SDK (Rust/C++ core with Python bindings) so third parties can add loaders, analyzers, exporters, and UI panels without forking the core.
@@ -101,6 +115,8 @@ Project Persistence & Versioning: Notes, scripts, types, and bookmarks serialize
 
 Synchronized Multi-View: A tear-away, split-pane UI featuring Disassembly, C-Pseudocode, Live Memory Hex Dump, Script Editor, Function Graph, and Knowledge Graph Notes—layout presets modeled on familiar Ghidra/IDA workflows.
 
+AI Copilot Panel: A dockable chat sidebar (visible only when a local LLM endpoint is connected) for natural-language questions and navigation commands. Successful resolutions auto-focus the correct pane, scroll to the target line/address/URL, and briefly highlight the destination so the analyst always sees where they were taken.
+
 Bookmarks, History & Annotations: Per-function color tags, analyst comments, and a navigable analysis history trail.
 
 Zero-Lag Asynchronous Design: The UI must never lock up while the backend scans memory, decompiles, or queries the local LLM.
@@ -118,6 +134,14 @@ Browser Extension Bridge: A lightweight Chromium/Firefox extension that streams 
 DevTools Protocol (CDP) Attach: Attach to Chrome, Edge, or Chromium via CDP for JavaScript breakpoints, network inspection, HAR-like logs, and source-map-aware debugging.
 
 Playwright/Puppeteer Headless Hook: Drive a headless browser for automated regression passes against staging environments; pipe navigation, console output, and requests into the Knowledge Graph.
+
+7.1.1 Copilot Browser Navigation
+
+Indexed Route & Page Inventory: While attached, NexusRE continuously indexes visited URLs, page titles, form actions, anchor text, and API endpoints into a searchable local index the Copilot can query offline.
+
+Ask-to-Navigate Examples: The analyst can type prompts such as "Does a billing page exist?", "Where is the user profile API?", or "Open the page we saw that returns 403"—the Copilot searches the index, answers with evidence, and navigates the attached browser to the matched route or highlights the matching network entry.
+
+Cross-View Sync: When a web page maps to a known native handler (Electron, WebView2, CEF), Copilot navigation opens both the browser location and the linked native function in the decompiler side by side.
 
 7.2 Network Traffic Inspection & Analysis
 
@@ -170,13 +194,16 @@ The following items are not yet fully specified above and should be tracked on t
 | Unpacker Assist | OEP detection heuristics and staged dump-to-database workflow | High |
 | Semantic Search | Embedding-based "find similar functions" across large binaries | High |
 | SBOM / Dependency Graph | Map statically linked and dynamically loaded third-party components | Medium |
+| Copilot Voice Input | Optional offline speech-to-text for hands-free "go to" commands in the lab | Low |
 
 9. Expected Output Deliverables
 Execute this prompt by providing:
 
 Architecture Blueprint: How the Static Analyzer, Dynamic Inspector, Decompiler, Local AI Context Manager, Script Runtime, Browser Bridge, and Traffic Proxy communicate.
 
-AI Orchestration Code: Rust/Python for querying the local LLM API with strict JSON Schema outputs for analysis tasks.
+AI Orchestration Code: Rust/Python for querying the local LLM API with strict JSON Schema outputs for analysis tasks and validated navigation action plans.
+
+Copilot Navigation Executor: The action schema, index queries (project + browser), disambiguation flow, and UI focus/highlight behavior for ask-to-navigate commands.
 
 Class Reconstruction Algorithm: Foundational code for RTTI/Vtable scanning and struct inference from live memory.
 
